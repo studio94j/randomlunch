@@ -1,13 +1,25 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 
+interface Restaurant {
+  name: string;
+  category: string;
+  price: string;
+  time: string;
+  distance: number;
+  lat: number;
+  lng: number;
+  address: string;
+  menus: { name: string; price: string; }[];
+}
+
 const LunchPicker = () => {
   const [distance, setDistance] = useState(300);
   const [selectedCategories, setSelectedCategories] = useState(['전체']);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
 
   // 마이워크스페이스타워 강남역 타워점 좌표
   const MYWORKSPACE_TOWER = {
