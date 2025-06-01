@@ -258,157 +258,24 @@ const LunchPicker = () => {
   const counts = getCategoryCounts();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center p-5 text-white font-sans">
-      <div className="max-w-md w-full bg-white bg-opacity-5 backdrop-blur-3xl border border-white border-opacity-10 rounded-3xl shadow-2xl overflow-hidden animate-slideUp">
-        {/* Header */}
-        <div className="bg-black bg-opacity-40 backdrop-blur-3xl text-white p-4 text-center m-5 rounded-lg">
-          <h1 className="text-lg font-bold mb-2">🍔 회사 점심 랜덤 뽑기</h1>
-          <p className="text-xs opacity-90 italic">
-            마이워크스페이스타워 {distance}m 이내 • 1만원 이하
-          </p>
-        </div>
+    <>
+      <style jsx global>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
 
-        <div className="p-8">
-          {/* 거리 필터 */}
-          <div className="bg-white bg-opacity-5 backdrop-blur-2xl border border-white border-opacity-10 rounded-xl p-4 mb-5">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm font-semibold">📍 검색 거리</span>
-              <span className="text-sm text-red-400 font-semibold bg-red-400 bg-opacity-10 px-2 py-1 rounded-lg">
-                {distance}m 이내
-              </span>
-            </div>
-            <div className="relative">
-              <div 
-                className="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-red-400 to-orange-500 rounded-full transition-all duration-200"
-                style={{ width: `${((distance - 300) / 700) * 100}%` }}
-              />
-              <input
-                type="range"
-                min="300"
-                max="1000"
-                value={distance}
-                step="50"
-                onChange={(e) => setDistance(parseInt(e.target.value))}
-                className="w-full h-1.5 bg-white bg-opacity-20 rounded-full appearance-none cursor-pointer slider"
-              />
-            </div>
-          </div>
+        html, body {
+          height: 100%;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+        }
 
-          {/* 카테고리 필터 */}
-          <div className="bg-white bg-opacity-5 backdrop-blur-2xl border border-white border-opacity-10 rounded-xl mb-6">
-            <div 
-              className="flex justify-between items-center p-4 cursor-pointer font-semibold text-sm hover:bg-white hover:bg-opacity-3 transition-colors"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <span>🍽️ 카테고리 선택</span>
-              <svg 
-                className={`w-4 h-4 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="#ff6b6b" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                viewBox="0 0 24 24"
-              >
-                <polyline points="6,9 12,15 18,9"></polyline>
-              </svg>
-            </div>
-            
-            {showFilters && (
-              <div className="px-4 pb-4 border-t border-white border-opacity-10 animate-slideDown">
-                {[
-                  { key: '전체', label: '전체', count: counts.전체 },
-                  { key: '한식', label: '한식', count: counts.한식 },
-                  { key: '양식', label: '양식', count: counts.양식 },
-                  { key: '중식', label: '중식', count: counts.중식 },
-                  { key: '일식', label: '일식', count: counts.일식 },
-                  { key: '분식', label: '분식', count: counts.분식 },
-                ].map((category, index) => (
-                  <label 
-                    key={category.key}
-                    className={`flex items-center py-2.5 px-2 cursor-pointer text-sm hover:text-red-400 hover:bg-red-400 hover:bg-opacity-5 rounded-md transition-colors ${index === 0 ? 'border-b border-white border-opacity-10 pb-4 mb-1' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category.key)}
-                      onChange={() => handleCategoryChange(category.key)}
-                      className="mr-3 scale-110 accent-red-400"
-                    />
-                    {category.label} ({category.count}개)
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+        body {
+          background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+          color: white;
+        }
 
-          {/* 뽑기 버튼 */}
-          <button
-            onClick={drawRestaurant}
-            disabled={isDrawing}
-            className={`w-full bg-gradient-to-r from-red-400 to-orange-500 text-white border-none rounded-xl p-4 text-lg font-bold cursor-pointer transition-all duration-300 shadow-lg backdrop-blur-2xl relative overflow-hidden ${
-              isDrawing 
-                ? 'opacity-80 cursor-not-allowed animate-pulse' 
-                : 'hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0'
-            }`}
-          >
-            <span className="relative z-10">
-              {isDrawing ? '🎲 뽑는 중...' : '🎲 오늘의 식당 뽑기'}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white via-opacity-20 to-transparent transform -translate-x-full hover:translate-x-full transition-transform duration-500" />
-          </button>
-
-          {/* 결과 카드 */}
-          <div className="bg-white bg-opacity-5 backdrop-blur-3xl border border-white border-opacity-10 rounded-2xl p-6 text-center my-5 transition-all duration-300 shadow-lg min-h-80 flex flex-col justify-center">
-            {!selectedRestaurant ? (
-              <div className="opacity-80">
-                <p className="text-xs leading-relaxed opacity-90 text-white text-opacity-80">
-                  오늘의 식당 뽑기 버튼을 눌러서<br />오늘의 점심을 골라봐요 🍽️
-                </p>
-              </div>
-            ) : (
-              <div className="animate-slideInResult">
-                <div className="text-xl font-bold mb-3 text-red-400">
-                  {selectedRestaurant.name}
-                </div>
-                <div className="text-sm opacity-90 leading-relaxed mb-4">
-                  📍 {selectedRestaurant.address}<br />
-                  💰 {selectedRestaurant.price}<br />
-                  🕐 {selectedRestaurant.time}<br />
-                  📏 도보 {Math.ceil(selectedRestaurant.distance / 80)}분 ({selectedRestaurant.distance}m)
-                </div>
-                
-                <div className="mt-5 text-left">
-                  <h4 className="text-sm mb-3 text-red-400 text-center">
-                    🍽️ 만원 이하 추천 메뉴
-                  </h4>
-                  <div className="bg-white bg-opacity-5 rounded-xl p-4 mb-4">
-                    {selectedRestaurant.menus.map((menu, index) => (
-                      <div 
-                        key={index}
-                        className={`flex justify-between py-2 text-xs ${index < selectedRestaurant.menus.length - 1 ? 'border-b border-white border-opacity-10' : ''}`}
-                      >
-                        <span className="text-white text-opacity-90">{menu.name}</span>
-                        <span className="text-red-400 font-semibold">{menu.price}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <button
-                    onClick={openNaverMap}
-                    className="w-full bg-white bg-opacity-10 backdrop-blur-2xl border border-white border-opacity-20 text-white rounded-xl p-3 text-xs cursor-pointer transition-all duration-300 font-medium hover:bg-red-400 hover:bg-opacity-20 hover:border-red-400 hover:-translate-y-0.5"
-                  >
-                    📍 네이버지도에서 보기
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-
-        </div>
-      </div>
-
-      <style jsx>{`
         @keyframes slideUp {
           from {
             transform: translateY(30px);
@@ -454,7 +321,21 @@ const LunchPicker = () => {
           animation: slideInResult 0.5s ease-out;
         }
 
+        .slider {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 6px;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.2);
+          outline: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
         .slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
           appearance: none;
           width: 20px;
           height: 20px;
@@ -464,7 +345,6 @@ const LunchPicker = () => {
           border: 3px solid white;
           box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
           transition: all 0.2s ease;
-          margin-top: -7px;
         }
 
         .slider::-webkit-slider-thumb:hover {
@@ -481,18 +361,420 @@ const LunchPicker = () => {
           border: 3px solid white;
           box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
           transition: all 0.2s ease;
+          -moz-appearance: none;
           appearance: none;
-          margin-top: -10px;
+        }
+
+        .glass-card {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .glass-section {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+        }
+
+        .header-section {
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(20px);
+          border-radius: 8px;
+        }
+
+        .distance-value {
+          background: rgba(255, 107, 107, 0.1);
+          color: #ff6b6b;
+          padding: 4px 8px;
+          border-radius: 8px;
+          font-weight: 600;
+        }
+
+        .slider-track-fill {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 6px;
+          border-radius: 3px;
+          background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+          transition: width 0.2s ease;
+          z-index: 1;
+        }
+
+        .draw-button {
+          background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+          border: none;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 18px;
+          font-weight: bold;
+          color: white;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+        }
+
+        .draw-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s ease;
+        }
+
+        .draw-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4);
+        }
+
+        .draw-button:hover::before {
+          left: 100%;
+        }
+
+        .draw-button:active {
+          transform: translateY(-1px);
+        }
+
+        .draw-button:disabled {
+          opacity: 0.8;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .draw-button.spinning {
+          background: linear-gradient(135deg, #fdcb6e, #e17055);
+          animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+
+        .location-button {
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+          border-radius: 10px;
+          padding: 12px 16px;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 500;
+          width: 100%;
+        }
+
+        .location-button:hover {
+          background: rgba(255, 107, 107, 0.2);
+          border-color: #ff6b6b;
+          transform: translateY(-1px);
+        }
+
+        .checkbox-item {
+          display: flex;
+          align-items: center;
+          padding: 10px 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: white;
+          transition: all 0.2s ease;
+          border-radius: 6px;
+          margin: 2px 0;
+        }
+
+        .checkbox-item:hover {
+          color: #ff6b6b;
+          background: rgba(255, 107, 107, 0.05);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+          margin-right: 12px;
+          transform: scale(1.2);
+          accent-color: #ff6b6b;
+        }
+
+        .restaurant-name {
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 12px;
+          color: #ff6b6b;
+        }
+
+        .restaurant-info {
+          font-size: 14px;
+          opacity: 0.9;
+          line-height: 1.6;
+          margin-bottom: 15px;
+        }
+
+        .menu-item {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: 13px;
+        }
+
+        .menu-item:last-child {
+          border-bottom: none;
+        }
+
+        .menu-name {
+          color: rgba(255, 255, 255, 0.9);
+        }
+
+        .menu-price {
+          color: #ff6b6b;
+          font-weight: 600;
         }
 
         @media (max-width: 480px) {
-          .max-w-md {
+          .container {
             margin: 10px;
             max-width: calc(100% - 20px);
           }
         }
       `}</style>
-    </div>
+
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '20px',
+        color: 'white',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif'
+      }}>
+        <div className="glass-card animate-slideUp" style={{
+          maxWidth: '400px',
+          width: '100%',
+          overflow: 'hidden'
+        }}>
+          {/* Header */}
+          <div className="header-section" style={{
+            color: 'white',
+            padding: '16px 20px',
+            textAlign: 'center',
+            margin: '20px',
+          }}>
+            <h1 style={{
+              fontSize: '16.8px',
+              fontWeight: 'bold',
+              marginBottom: '8px'
+            }}>🍔 회사 점심 랜덤 뽑기</h1>
+            <p style={{
+              fontSize: '12px',
+              opacity: '0.9',
+              fontStyle: 'italic'
+            }}>
+              마이워크스페이스타워 {distance}m 이내 • 1만원 이하
+            </p>
+          </div>
+
+          <div style={{ padding: '30px 20px' }}>
+            {/* 거리 필터 */}
+            <div className="glass-section" style={{ padding: '16px', marginBottom: '20px' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '15px'
+              }}>
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'white'
+                }}>📍 검색 거리</span>
+                <span className="distance-value" style={{ fontSize: '14px' }}>
+                  {distance}m 이내
+                </span>
+              </div>
+              <div style={{ position: 'relative', margin: '10px 0' }}>
+                <div 
+                  className="slider-track-fill"
+                  style={{ width: `${((distance - 300) / 700) * 100}%` }}
+                />
+                <input
+                  type="range"
+                  className="slider"
+                  min="300"
+                  max="1000"
+                  value={distance}
+                  step="50"
+                  onChange={(e) => setDistance(parseInt(e.target.value))}
+                  style={{ position: 'relative', zIndex: '2' }}
+                />
+              </div>
+            </div>
+
+            {/* 카테고리 필터 */}
+            <div className="glass-section" style={{ marginBottom: '25px' }}>
+              <div 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  color: 'white',
+                  transition: 'background 0.2s ease'
+                }}
+                onClick={() => setShowFilters(!showFilters)}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.03)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+              >
+                <span>🍽️ 카테고리 선택</span>
+                <svg 
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    transition: 'transform 0.3s ease',
+                    transform: showFilters ? 'rotate(180deg)' : 'rotate(0deg)',
+                    cursor: 'pointer'
+                  }}
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="#ff6b6b" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </div>
+              
+              {showFilters && (
+                <div className="animate-slideDown" style={{
+                  padding: '0 16px 16px 16px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  {[
+                    { key: '전체', label: '전체', count: counts.전체 },
+                    { key: '한식', label: '한식', count: counts.한식 },
+                    { key: '양식', label: '양식', count: counts.양식 },
+                    { key: '중식', label: '중식', count: counts.중식 },
+                    { key: '일식', label: '일식', count: counts.일식 },
+                    { key: '분식', label: '분식', count: counts.분식 },
+                  ].map((category, index) => (
+                    <label 
+                      key={category.key}
+                      className="checkbox-item"
+                      style={index === 0 ? {
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                        paddingBottom: '15px',
+                        marginBottom: '5px'
+                      } : {}}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category.key)}
+                        onChange={() => handleCategoryChange(category.key)}
+                      />
+                      {category.label} ({category.count}개)
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 뽑기 버튼 */}
+            <button
+              className={`draw-button ${isDrawing ? 'spinning' : ''}`}
+              onClick={drawRestaurant}
+              disabled={isDrawing}
+            >
+              <span style={{ position: 'relative', zIndex: '10' }}>
+                {isDrawing ? '🎲 뽑는 중...' : '🎲 오늘의 식당 뽑기'}
+              </span>
+            </button>
+
+            {/* 결과 카드 */}
+            <div className="glass-card" style={{
+              padding: '25px',
+              textAlign: 'center',
+              margin: '20px 0',
+              minHeight: '300px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}>
+              {!selectedRestaurant ? (
+                <div style={{ opacity: '0.8' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{
+                      fontSize: '12px',
+                      lineHeight: '18px',
+                      opacity: '0.9',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      margin: '0'
+                    }}>
+                      오늘의 식당 뽑기 버튼을 눌러서<br />오늘의 점심을 골라봐요 🍽️
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="animate-slideInResult">
+                  <div className="restaurant-name">
+                    {selectedRestaurant.name}
+                  </div>
+                  <div className="restaurant-info">
+                    📍 {selectedRestaurant.address}<br />
+                    💰 {selectedRestaurant.price}<br />
+                    🕐 {selectedRestaurant.time}<br />
+                    📏 도보 {Math.ceil(selectedRestaurant.distance / 80)}분 ({selectedRestaurant.distance}m)
+                  </div>
+                  
+                  <div style={{ marginTop: '20px', textAlign: 'left' }}>
+                    <h4 style={{
+                      fontSize: '14px',
+                      marginBottom: '12px',
+                      color: '#ff6b6b',
+                      textAlign: 'center'
+                    }}>
+                      🍽️ 만원 이하 추천 메뉴
+                    </h4>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '10px',
+                      padding: '15px',
+                      marginBottom: '15px'
+                    }}>
+                      {selectedRestaurant.menus.map((menu, index) => (
+                        <div key={index} className="menu-item">
+                          <span className="menu-name">{menu.name}</span>
+                          <span className="menu-price">{menu.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <button
+                      className="location-button"
+                      onClick={openNaverMap}
+                    >
+                      📍 네이버지도에서 보기
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
