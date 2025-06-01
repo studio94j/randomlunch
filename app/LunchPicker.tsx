@@ -223,7 +223,7 @@ const LunchPicker = () => {
   };
 
   // 카테고리 변경 핸들러
-  const handleCategoryChange = (category) => {
+  const handleCategoryChange = (category: string) => {
     if (category === '전체') {
       setSelectedCategories(['전체']);
     } else {
