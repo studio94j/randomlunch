@@ -15,6 +15,8 @@ const LunchPicker = () => {
     lng: 127.027956
   };
 
+  console.log('야호 코드 변경했다!');
+
   // 강남역 근처 실제 식당 데이터
   const restaurants = [
     { 
