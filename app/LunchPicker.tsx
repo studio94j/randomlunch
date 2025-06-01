@@ -646,8 +646,8 @@ const LunchPicker = () => {
                   transition: 'background 0.2s ease'
                 }}
                 onClick={() => setShowFilters(!showFilters)}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.03)'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                onMouseEnter={(e) => (e.target as HTMLElement).style.background = 'rgba(255, 255, 255, 0.03)'}
+                onMouseLeave={(e) => (e.target as HTMLElement).style.background = 'transparent'}
               >
                 <span>🍽️ 카테고리 선택</span>
                 <svg 
