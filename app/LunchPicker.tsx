@@ -107,7 +107,7 @@ const LunchPicker: React.FC = () => {
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(DOINGLAB_LOCATION.lat, DOINGLAB_LOCATION.lng),
         map: naverMapInstance.current,
-        title: '강남역 마이스페이스 타워',
+        title: '랜덤 점심 뽑기',
         icon: {
           content: `<div style="background-color: #ff6b6b; color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.25); font-family: 'Apple SD Gothic Neo',sans-serif; font-size:14px;">📍 기준위치</div>`,
           anchor: new window.naver.maps.Point(50, 40),
@@ -189,7 +189,7 @@ const LunchPicker: React.FC = () => {
         markersRef.current.push(marker);
         const infoWindow = new window.naver.maps.InfoWindow({
           content: `
-            <div style="padding:10px; min-width:180px; font-size:13px; font-family:'Apple SD Gothic Neo',sans-serif;">
+            <div style="padding:4px; min-width:180px; font-size : 14px; font-family:'Apple SD Gothic Neo',sans-serif;">
               <div style="font-weight:bold;color:#ff6b6b;margin-bottom:5px">${r.name}</div>
               <div style="color:#666;">📍 ${r.address}</div>
               <div style="color:#666;">💰 ${r.price}</div>
@@ -225,33 +225,35 @@ const LunchPicker: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg font-sdgothic text-main flex items-center justify-center">
-      <div className="w-full max-w-md mx-auto p-2 md:p-6">
+    <div className="min-h-screen bg-bg font-main text-main flex items-center justify-center h-full w-full scale-150 p-10">
+      <div className="w-full max-w-md mx-auto p-8 md:p-8">
         <div className="bg-glass border border-border rounded-3xl shadow-2xl overflow-hidden">
 
           {/* Header */}
-          <div className="bg-bggray rounded-2xl text-center m-5 p-4">
-            <h1 className="text-title font-bold text-primary mb-2 font-sdgothic">🍔 강남역 5번 출구 주변 점심</h1>
-            <p className="text-caption italic text-textweak font-sdgothic">📍 기준: 강남역 마이스페이스타워</p>
+          <div className="bg-bggray rounded-2xl text-center p-4 m-4 border-1 border-primary/50 shadow-2xl">
+            <h1 className="text-title font-bold text-primary mb-1 font-main">🍽️ 랜덤 점심 뽑기</h1>
+            <p className="text-caption italic text-textweak font-main">📍위치 : 강남역 마이스페이스타워</p>
           </div>
 
-          <div className="p-4 md:p-6 space-y-6">
+          <div className="p-4 md:p-4 space-y-4">
 
             {/* 거리 chip */}
-            <div className="bg-glass rounded-xl p-4 mb-2">
+            <div className="bg-glass rounded-xl p-4 mb-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-body font-semibold">📍 식당 거리</span>
+                <span className="text-body font-semibold">📍식당 거리</span>
                 <span className="bg-primary/10 text-primary px-3 py-1 rounded-lg text-caption font-semibold">
                   {distance >= 1000 ? '1km' : `${distance}m`} 이내
                 </span>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-4">
                 {DISTANCE_CHIPS.map((dist) => (
                   <button
                     key={dist}
                     onClick={() => setDistance(dist)}
                     className={`
-                      py-3 px-4 rounded-lg text-caption font-semibold transition-all
+                      py-2 px-4 rounded-lg text-caption font-semibold transition-all border border-border
+                  
+
                       ${distance === dist
                         ? 'bg-primary text-white shadow-lg shadow-primary/25'
                         : 'bg-disable text-textweak hover:bg-primary/10 hover:text-primary'}
@@ -266,7 +268,7 @@ const LunchPicker: React.FC = () => {
             {/* 가격 슬라이더 */}
             <div className="bg-glass rounded-xl p-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-body font-semibold">💰 가격</span>
+                <span className="text-body font-semibold">💰가격</span>
                 <span className="bg-point/10 text-point px-3 py-1 rounded-lg text-caption font-semibold">
                   {maxPrice.toLocaleString()}원 이하
                 </span>
@@ -290,7 +292,7 @@ const LunchPicker: React.FC = () => {
               onClick={pickRandomRestaurant}
               disabled={isSearching || filtered.length === 0}
               className={`
-                w-full py-4 rounded-xl font-bold text-header transition-all duration-300 font-sdgothic
+                w-full py-4 rounded-xl font-semibold text-body transition-all duration-300 font-
                 ${isSearching
                   ? 'bg-gradient-to-r from-secondary to-primary animate-pulse cursor-not-allowed'
                   : filtered.length === 0
@@ -298,12 +300,12 @@ const LunchPicker: React.FC = () => {
                   : 'bg-gradient-to-r from-primary to-secondary hover:from-primary hover:to-point hover:shadow-lg hover:-translate-y-0.5'}
               `}
             >
-              {isSearching ? '🔍 식당 검색 중...' : '🎲 오늘의 식당 뽑기'}
+              {isSearching ? '🔍 식당 검색 중...' : '🎲 오늘의 랜덤 뽑기'}
             </button>
 
             {/* 추첨 결과 */}
             {selected && (
-              <div className="bg-glass rounded-xl p-5 mt-4 font-sdgothic">
+              <div className="bg-glass rounded-xl p-5 mt-4 font-main">
                 <div className="text-header font-bold mb-3 text-primary">{selected.name}</div>
                 <div className="mb-2 text-body text-textmain">📍 {selected.address}</div>
                 <div className="mb-2 text-body text-textweak">💰 {selected.price}</div>
@@ -320,19 +322,20 @@ const LunchPicker: React.FC = () => {
             {/* 지도 */}
             <div className="bg-glass rounded-xl p-4 mt-2">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="text-caption font-semibold text-point">🗺️ 주변 식당 지도</h4>
+                <h4 className="text-body font-main text-point">🗺️ 식당 가는 길</h4>
               </div>
-              <div className="w-full h-80 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg overflow-hidden border border-border">
+              <div className="w-full h-80 bg-bggray rounded-lg overflow-hidden border border-border">
+              {error && <div className="text-caption text-primary text-center mt-3">{error}</div>}
+            {!isSearching && !error && filtered.length === 0 && (
+              <div className="text-caption text-textweak text-center mt-8 mb-8">
+                검색 조건에 맞는 식당이 없습니다.
+              </div>
+            )}
                 <div id="map" ref={mapRef} className="w-full h-full" />
               </div>
             </div>
 
-            {error && <div className="text-caption text-primary text-center mt-3">{error}</div>}
-            {!isSearching && !error && filtered.length === 0 && (
-              <div className="text-caption text-textweak text-center mt-3">
-                검색 조건에 맞는 식당이 없습니다.
-              </div>
-            )}
+            
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        className="h-full w-full flex items-center justify-center"
       >
         {children}
       </body>

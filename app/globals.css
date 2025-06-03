@@ -4,6 +4,12 @@
   --background: #ffffff;
   --foreground: #171717;
 }
+html, body {
+  max-width: 100%;
+  min-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
 @theme {
   --color-primary: #ff6b6b;
@@ -19,10 +25,10 @@
 
   --font-main: "Apple SD Gothic Neo", sans-serif;
 
-  --size-title: 36px;
-  --size-header: 24px;
-  --size-body: 16px;
-  --size-caption: 12px;
+  --text-title: 22px;
+  --text-header: 16px;
+  --text-body: 14px;
+  --text-caption: 10px;
 }
 
 body {
@@ -43,3 +49,4 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
