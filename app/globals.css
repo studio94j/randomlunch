@@ -5,11 +5,30 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --color-primary: #ff6b6b;
+  --color-secondary: #ee5a24;
+  --color-point: #ffffff;
+  --color-disablebg: #E0E0E0;
+  --color-bg: #0f0f0f;
+  --color-bggray: #1a1a1a;
+  --color-glass: rgba(255,255,255,0.05);
+  --color-text-main: #fff;
+  --color-text-weak: rgba(255,255,255,0.8);
+  --color-border: rgba(255,255,255,0.1);
+
+  --font-main: "Apple SD Gothic Neo", sans-serif;
+
+  --size-title: 36px;
+  --size-header: 24px;
+  --size-body: 16px;
+  --size-caption: 12px;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+  font-family: var(--font-main);
 }
 
 @media (prefers-color-scheme: dark) {
