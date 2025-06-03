@@ -15,6 +15,7 @@ interface Restaurant {
 declare global {
   interface Window {
     naver?: any;
+    initMap?: () => void;
   }
 }
 
@@ -56,6 +57,7 @@ const LunchPicker: React.FC = () => {
   const [selected, setSelected] = useState<Restaurant | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const naverMapInstance = useRef<any>(null);
@@ -64,46 +66,97 @@ const LunchPicker: React.FC = () => {
 
   // 네이버 지도 API 로드
   useEffect(() => {
-    if (scriptLoadedRef.current || window.naver?.maps) return;
+    if (scriptLoadedRef.current || window.naver?.maps) {
+      initializeMap();
+      return;
+    }
 
-    (window as any).map = null;
-    (window as any).initMap = function() {
-      (window as any).map = new window.naver.maps.Map('map', {
-        center: new window.naver.maps.LatLng(DOINGLAB_LOCATION.lat, DOINGLAB_LOCATION.lng),
-        zoom: 16,
-      });
-      scriptLoadedRef.current = true;
-      naverMapInstance.current = (window as any).map;
-      setTimeout(() => {
-        addBaseMarker();
-        fetchRestaurants();
-      }, 300);
-      setError(null);
+    const initMap = () => {
+      // 네이버 지도 API가 완전히 로드되었는지 확인
+      if (!window.naver?.maps?.Map) {
+        console.error('네이버 지도 API가 로드되지 않았습니다.');
+        setError('지도 API 로드 실패');
+        return;
+      }
+
+      try {
+        initializeMap();
+      } catch (error) {
+        console.error('지도 초기화 실패:', error);
+        setError('지도 초기화 실패');
+      }
     };
+
+    // 전역 콜백 함수 설정
+    window.initMap = initMap;
+
     try {
       const script = document.createElement('script');
       script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_MAPS_CLIENT_ID}&callback=initMap`;
       script.async = true;
-      script.onerror = () => setError('지도 API 로드 실패');
+      script.onerror = () => {
+        console.error('네이버 지도 스크립트 로드 실패');
+        setError('지도 API 로드 실패');
+      };
       document.head.appendChild(script);
     } catch (e) {
+      console.error('스크립트 추가 실패:', e);
       setError('지도 API 로드 실패');
     }
+
     return () => {
-      if ((window as any).initMap) delete (window as any).initMap;
-      if ((window as any).map) delete (window as any).map;
-      markersRef.current.forEach(marker => {
-        try { marker?.setMap?.(null); } catch {}
-      });
-      markersRef.current = [];
+      // 클린업
+      if (window.initMap) {
+        delete window.initMap;
+      }
+      clearMarkers();
       naverMapInstance.current = null;
+      scriptLoadedRef.current = false;
     };
-    // eslint-disable-next-line
   }, []);
+
+  const initializeMap = () => {
+    if (!window.naver?.maps?.Map || !mapRef.current) {
+      return;
+    }
+
+    try {
+      const map = new window.naver.maps.Map(mapRef.current, {
+        center: new window.naver.maps.LatLng(DOINGLAB_LOCATION.lat, DOINGLAB_LOCATION.lng),
+        zoom: 16,
+      });
+
+      naverMapInstance.current = map;
+      scriptLoadedRef.current = true;
+      setMapLoaded(true);
+      setError(null);
+
+      // 기준 위치 마커 추가
+      setTimeout(() => {
+        addBaseMarker();
+      }, 300);
+
+    } catch (error) {
+      console.error('지도 초기화 중 오류:', error);
+      setError('지도 초기화 실패');
+    }
+  };
+
+  const clearMarkers = () => {
+    markersRef.current.forEach(marker => {
+      try { 
+        marker?.setMap?.(null); 
+      } catch (e) {
+        // 마커 제거 실패 시 무시
+      }
+    });
+    markersRef.current = [];
+  };
 
   function addBaseMarker() {
     try {
       if (!naverMapInstance.current || !window.naver?.maps) return;
+      
       const marker = new window.naver.maps.Marker({
         position: new window.naver.maps.LatLng(DOINGLAB_LOCATION.lat, DOINGLAB_LOCATION.lng),
         map: naverMapInstance.current,
@@ -114,7 +167,9 @@ const LunchPicker: React.FC = () => {
         },
       });
       markersRef.current = [marker];
-    } catch {}
+    } catch (error) {
+      console.error('기준 마커 추가 실패:', error);
+    }
   }
 
   const fetchRestaurants = async () => {
@@ -151,6 +206,7 @@ const LunchPicker: React.FC = () => {
       setRestaurants(parsed);
       setIsSearching(false);
     } catch (e) {
+      console.error('식당 검색 실패:', e);
       setError('네이버 검색에 실패했습니다.');
       setRestaurants([]);
       setIsSearching(false);
@@ -164,17 +220,20 @@ const LunchPicker: React.FC = () => {
         (r.price === '정보 없음' || parseInt(r.price.replace(/[^0-9]/g, '')) <= maxPrice)
       )
     );
-    // eslint-disable-next-line
   }, [restaurants, distance, maxPrice]);
 
   useEffect(() => {
     if (!naverMapInstance.current || !window.naver?.maps) return;
+    
+    // 기존 식당 마커들 제거 (기준 마커는 유지)
     if (markersRef.current.length > 1) {
       markersRef.current.slice(1).forEach(marker => {
         try { marker.setMap(null); } catch {}
       });
       markersRef.current = markersRef.current.slice(0, 1);
     }
+
+    // 새로운 식당 마커들 추가
     filtered.forEach(r => {
       try {
         const marker = new window.naver.maps.Marker({
@@ -187,6 +246,7 @@ const LunchPicker: React.FC = () => {
           },
         });
         markersRef.current.push(marker);
+        
         const infoWindow = new window.naver.maps.InfoWindow({
           content: `
             <div style="padding:4px; min-width:180px; font-size : 14px; font-family:'Apple SD Gothic Neo',sans-serif;">
@@ -197,22 +257,34 @@ const LunchPicker: React.FC = () => {
             </div>
           `,
         });
+        
         window.naver.maps.Event.addListener(marker, 'click', () => {
           if (infoWindow.getMap && infoWindow.getMap()) infoWindow.close();
           else infoWindow.open(naverMapInstance.current, marker);
         });
-      } catch {}
+      } catch (error) {
+        console.error('마커 추가 실패:', error);
+      }
     });
   }, [filtered]);
 
   const pickRandomRestaurant = () => {
+    // 첫 번째 클릭 시에만 식당 검색
+    if (restaurants.length === 0) {
+      fetchRestaurants();
+      return;
+    }
+    
     if (filtered.length === 0) return;
     setSelected(null);
     setTimeout(() => {
-      setSelected(filtered[Math.floor(Math.random() * filtered.length)]);
-      if (naverMapInstance.current && window.naver?.maps && filtered.length > 0) {
+      const randomRestaurant = filtered[Math.floor(Math.random() * filtered.length)];
+      setSelected(randomRestaurant);
+      
+      // 선택된 식당 위치로 지도 이동
+      if (naverMapInstance.current && window.naver?.maps && randomRestaurant) {
         naverMapInstance.current.setCenter(
-          new window.naver.maps.LatLng(filtered[0].lat, filtered[0].lng)
+          new window.naver.maps.LatLng(randomRestaurant.lat, randomRestaurant.lng)
         );
       }
     }, 900);
@@ -225,12 +297,12 @@ const LunchPicker: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg font-main text-main flex items-center justify-center h-full w-full scale-150 p-10">
+    <div className="min-h-screen bg-bg font-main text-main flex items-center justify-center h-full w-full scale-100 p-10">
       <div className="w-full max-w-md mx-auto p-8 md:p-8">
         <div className="bg-glass border border-border rounded-3xl shadow-2xl overflow-hidden">
 
           {/* Header */}
-          <div className="bg-bggray rounded-2xl text-center p-4 m-4 border-1 border-primary/50 shadow-2xl">
+          <div className="bg-bggray rounded-2xl text-center p-4 m-4 border-1 border-primary/30">
             <h1 className="text-title font-bold text-primary mb-1 font-main">🍽️ 랜덤 점심 뽑기</h1>
             <p className="text-caption italic text-textweak font-main">📍위치 : 강남역 마이스페이스타워</p>
           </div>
@@ -251,11 +323,9 @@ const LunchPicker: React.FC = () => {
                     key={dist}
                     onClick={() => setDistance(dist)}
                     className={`
-                      py-2 px-4 rounded-lg text-caption font-semibold transition-all border border-border
-                  
-
+                      py-2 px-4 rounded-lg text-caption font-textweak transition-all border border-border
                       ${distance === dist
-                        ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                        ? 'bg-primary/10 text-primary font-bold shadow-lg shadow-black/10'
                         : 'bg-disable text-textweak hover:bg-primary/10 hover:text-primary'}
                     `}
                   >
@@ -290,17 +360,19 @@ const LunchPicker: React.FC = () => {
             {/* 검색 결과/추첨 */}
             <button
               onClick={pickRandomRestaurant}
-              disabled={isSearching || filtered.length === 0}
+              disabled={isSearching || !mapLoaded}
               className={`
                 w-full py-4 rounded-xl font-semibold text-body transition-all duration-300 font-
                 ${isSearching
                   ? 'bg-gradient-to-r from-secondary to-primary animate-pulse cursor-not-allowed'
-                  : filtered.length === 0
-                  ? 'bg-disable cursor-not-allowed'
+                  : !mapLoaded
+                  ? 'bg-gradient-to-r from-secondary to-primary shadow-lg shadow-primary/25 border border-white/30 cursor-not-allowed'
                   : 'bg-gradient-to-r from-primary to-secondary hover:from-primary hover:to-point hover:shadow-lg hover:-translate-y-0.5'}
               `}
             >
-              {isSearching ? '🔍 식당 검색 중...' : '🎲 오늘의 랜덤 뽑기'}
+              {!mapLoaded ? '🗺️ 지도 로딩 중...' :
+               isSearching ? '🔍 식당 검색 중...' : 
+               restaurants.length === 0 ? '🔍 식당 검색하기' : '🎲 오늘의 랜덤 뽑기'}
             </button>
 
             {/* 추첨 결과 */}
@@ -325,17 +397,15 @@ const LunchPicker: React.FC = () => {
                 <h4 className="text-body font-main text-point">🗺️ 식당 가는 길</h4>
               </div>
               <div className="w-full h-80 bg-bggray rounded-lg overflow-hidden border border-border">
-              {error && <div className="text-caption text-primary text-center mt-3">{error}</div>}
-            {!isSearching && !error && filtered.length === 0 && (
-              <div className="text-caption text-textweak text-center mt-8 mb-8">
-                검색 조건에 맞는 식당이 없습니다.
-              </div>
-            )}
+                {error && <div className="text-caption text-primary text-center mt-3">{error}</div>}
+                {!isSearching && !error && restaurants.length > 0 && filtered.length === 0 && (
+                  <div className="text-body text-textweak text-gray-500 text-center mt-12 mb-8">
+                    🥹 검색 조건에 맞는 식당이 없어요.
+                  </div>
+                )}
                 <div id="map" ref={mapRef} className="w-full h-full" />
               </div>
             </div>
-
-            
           </div>
         </div>
       </div>
